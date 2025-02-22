@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Автовоспроизведение видео из файла</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #000;
+        }
+        video {
+            max-width: 100%;
+            max-height: 100%;
+        }
+    </style>
+</head>
+<body>
+    <video id="videoPlayer" controls autoplay></video>
+
+    <script>
+        const videoPlayer = document.getElementById('videoPlayer');
+        let videoPlaylist = [];
+        let currentVideoIndex = 0;
+
+        // Функция для загрузки плейлиста из файла
+        async function loadPlaylist() {
+            try {
+                const response = await fetch('playlist.txt'); // Укажите имя файла
+                if (!response.ok) {
+                    throw new Error('Файл не найден');
+                }
+                const text = await response.text();
+                videoPlaylist = text.split('\n').filter(url => url.trim() !== ''); // Разделяем строки и убираем пустые
+                if (videoPlaylist.length > 0) {
+                    playNextVideo(); // Начинаем воспроизведение, если список не пустой
+                }
+            } catch (error) {
+                console.error('Ошибка загрузки плейлиста:', error);
+            }
+        }
+
+        // Функция для воспроизведения следующего видео
+        function playNextVideo() {
+            if (currentVideoIndex >= videoPlaylist.length) {
+                currentVideoIndex = 0; // Возвращаемся к началу списка
+            }
+            videoPlayer.src = videoPlaylist[currentVideoIndex];
+            videoPlayer.play().catch(error => {
+                console.error("Ошибка автозапуска:", error);
+            });
+            currentVideoIndex++;
+        }
+
+        // Обработчик события окончания видео
+        videoPlayer.addEventListener('ended', playNextVideo);
+
+        // Загружаем плейлист при загрузке страницы
+        loadPlaylist();
+    </script>
+</body>
+</html>
